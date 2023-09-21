@@ -9,8 +9,8 @@ import { Flashcard, FlashcardSchema } from './flashcard.schema';
     MongooseModule.forFeature([
       {
         name: Flashcard.name,
-        schema: FlashcardSchema
-      }
+        schema: FlashcardSchema,
+      },
     ]),
   ],
   controllers: [FlashcardController],

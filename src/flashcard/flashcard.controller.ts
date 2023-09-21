@@ -1,8 +1,18 @@
 import { Controller, Inject } from '@nestjs/common';
-import { GrpcMethod, MessagePattern, Payload } from '@nestjs/microservices';
+import { GrpcMethod } from '@nestjs/microservices';
 import { FlashcardService } from './flashcard.service';
-import { CreateFlashcardResponse, FLASHCARD_SERVICE_NAME, FindAllResponse, UpdateFlashcardResponse } from './flashcard.pb';
-import { CreateFlashcardRequestDto, FindAllArgsRequestDto, FindOneRequestDto, UpdateFlashcardRequestDto } from './flashcard.dto';
+import {
+  CreateFlashcardResponse,
+  FLASHCARD_SERVICE_NAME,
+  FindAllResponse,
+  UpdateFlashcardResponse,
+} from './flashcard.pb';
+import {
+  CreateFlashcardRequestDto,
+  FindAllArgsRequestDto,
+  FindOneRequestDto,
+  UpdateFlashcardRequestDto,
+} from './flashcard.dto';
 
 @Controller()
 export class FlashcardController {
@@ -10,7 +20,9 @@ export class FlashcardController {
   private readonly flashcardService: FlashcardService;
 
   @GrpcMethod(FLASHCARD_SERVICE_NAME, 'CreateFlashcard')
-  private createFalshcard(payload: CreateFlashcardRequestDto): Promise<CreateFlashcardResponse> {
+  private createFalshcard(
+    payload: CreateFlashcardRequestDto,
+  ): Promise<CreateFlashcardResponse> {
     return this.flashcardService.createFlashcard(payload);
   }
 
@@ -25,7 +37,9 @@ export class FlashcardController {
   }
 
   @GrpcMethod(FLASHCARD_SERVICE_NAME, 'UpdateFlashcard')
-  updateFlashcard(payload: UpdateFlashcardRequestDto): Promise<UpdateFlashcardResponse> {
+  updateFlashcard(
+    payload: UpdateFlashcardRequestDto,
+  ): Promise<UpdateFlashcardResponse> {
     return this.flashcardService.updateFlashcard(payload);
   }
 

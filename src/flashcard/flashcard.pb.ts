@@ -19,7 +19,12 @@ export interface CreateFlashcardRequest {
 export interface CreateFlashcardResponse {
   status: number;
   error: string[];
+  data: CreateFlashcardData | undefined;
+}
+
+export interface CreateFlashcardData {
   id: string;
+  createdDate: string;
 }
 
 export interface FindOneData {
