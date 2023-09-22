@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsOptional, IsString, ValidateBy } from 'class-validator';
+import { IsJWT, IsNotEmpty, IsOptional, IsString, ValidateBy } from 'class-validator';
 import {
   CreateFlashcardRequest,
   FindAllArgsRequest,
@@ -6,6 +6,8 @@ import {
   OrderBy,
   Order,
   UpdateFlashcardRequest,
+  GetShareLinkRequest,
+  ViewFromShareLinkRequest,
 } from './flashcard.pb';
 import { isValidObjectId } from 'mongoose';
 
@@ -85,4 +87,34 @@ export class UpdateFlashcardRequestDto implements UpdateFlashcardRequest {
 
   @IsString()
   public readonly answer: string;
+}
+
+export class GetShareLinkRequestDto implements GetShareLinkRequest {
+  @IsNotEmpty()
+  @IsString()
+  // @ValidateBy(
+  //   {
+  //     name: 'IsValidObjectId',
+  //     validator: (value: string) => isValidObjectId(value),
+  //   },
+  //   {
+  //     message: '$property must be a valid ObjectId',
+  //   },
+  // )
+  public readonly userId: string;
+}
+
+export class ViewFromShareLinkRequestDto implements ViewFromShareLinkRequest {
+  @IsNotEmpty()
+  @IsString()
+  @ValidateBy(
+    {
+      name: 'IsValidObjectId',
+      validator: (value: string) => isValidObjectId(value),
+    },
+    {
+      message: '$property must be a valid ObjectId',
+    },
+  )
+  public readonly token: string;
 }

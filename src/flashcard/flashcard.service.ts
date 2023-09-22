@@ -1,11 +1,12 @@
 import { HttpStatus, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Flashcard, FlashcardDocument } from './flashcard.schema';
-import { Model } from 'mongoose';
+import mongoose, { Model } from 'mongoose';
 import {
   CreateFlashcardResponse,
   FindAllResponse,
   FindOneResponse,
+  GetShareLinkResponse,
   Order,
   UpdateFlashcardResponse,
 } from './flashcard.pb';
@@ -13,7 +14,9 @@ import {
   CreateFlashcardRequestDto,
   FindAllArgsRequestDto,
   FindOneRequestDto,
+  GetShareLinkRequestDto,
   UpdateFlashcardRequestDto,
+  ViewFromShareLinkRequestDto,
 } from './flashcard.dto';
 
 @Injectable()
@@ -106,5 +109,25 @@ export class FlashcardService {
       status: HttpStatus.OK,
       error: null,
     };
+  }
+
+  async getShareLink({ userId: _ }: GetShareLinkRequestDto): Promise<GetShareLinkResponse> {
+    const objectId = new mongoose.Types.ObjectId();
+    return {
+      status: HttpStatus.OK,
+      error: null,
+      link: `/view-shared/${objectId._id.toString()}`
+    };
+  }
+
+  async viewFromShareLink({ token }: ViewFromShareLinkRequestDto): Promise<FindAllResponse> {
+    if (!mongoose.isValidObjectId(token)) {
+      return {
+        status: HttpStatus.BAD_REQUEST,
+        error: ['Invalid link (Broken link)'],
+        data: undefined,
+      };
+    }
+    return this.findAll({ orderBy: { createdDate: Order.DESC } });
   }
 }

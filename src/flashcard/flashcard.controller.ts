@@ -11,7 +11,9 @@ import {
   CreateFlashcardRequestDto,
   FindAllArgsRequestDto,
   FindOneRequestDto,
+  GetShareLinkRequestDto,
   UpdateFlashcardRequestDto,
+  ViewFromShareLinkRequestDto,
 } from './flashcard.dto';
 
 @Controller()
@@ -27,24 +29,35 @@ export class FlashcardController {
   }
 
   @GrpcMethod(FLASHCARD_SERVICE_NAME, 'FindAll')
-  findAll(payload: FindAllArgsRequestDto): Promise<FindAllResponse> {
+  private findAll(payload: FindAllArgsRequestDto): Promise<FindAllResponse> {
     return this.flashcardService.findAll(payload);
   }
 
   @GrpcMethod(FLASHCARD_SERVICE_NAME, 'FindOne')
-  findOne({ id }: FindOneRequestDto) {
+  private findOne({ id }: FindOneRequestDto) {
     return this.flashcardService.findOne({ id });
   }
 
   @GrpcMethod(FLASHCARD_SERVICE_NAME, 'UpdateFlashcard')
-  updateFlashcard(
+  private updateFlashcard(
     payload: UpdateFlashcardRequestDto,
   ): Promise<UpdateFlashcardResponse> {
     return this.flashcardService.updateFlashcard(payload);
   }
 
   @GrpcMethod(FLASHCARD_SERVICE_NAME, 'DeleteFlashcard')
-  deleteFlashcard({ id }: FindOneRequestDto): Promise<UpdateFlashcardResponse> {
+  private deleteFlashcard({ id }: FindOneRequestDto): Promise<UpdateFlashcardResponse> {
     return this.flashcardService.deleteFlashcard({ id });
   }
+
+  @GrpcMethod(FLASHCARD_SERVICE_NAME, 'GetShareLink')
+  private getShareLink({ userId }: GetShareLinkRequestDto): Promise<UpdateFlashcardResponse> {
+    return this.flashcardService.getShareLink({ userId });
+  }
+
+  @GrpcMethod(FLASHCARD_SERVICE_NAME, 'ViewFromShareLink')
+  private viewFromShareLink({ token }: ViewFromShareLinkRequestDto): Promise<UpdateFlashcardResponse> {
+    return this.flashcardService.viewFromShareLink({ token });
+  }
+
 }

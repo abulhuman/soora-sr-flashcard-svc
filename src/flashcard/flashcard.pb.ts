@@ -73,6 +73,26 @@ export interface UpdateFlashcardResponse {
   error: string[];
 }
 
+export interface GetShareLinkRequest {
+  userId: string;
+}
+
+export interface GetShareLinkResponse {
+  status: number;
+  error: string[];
+  link: string;
+}
+
+export interface ViewFromShareLinkRequest {
+  token: string;
+}
+
+export interface ViewFromShareLinkResponse {
+  status: number;
+  error: string[];
+  data: FindAllData | undefined;
+}
+
 export const FLASHCARD_PACKAGE_NAME = "flashcard";
 
 export interface FlashcardServiceClient {
@@ -85,6 +105,10 @@ export interface FlashcardServiceClient {
   updateFlashcard(request: UpdateFlashcardRequest): Observable<UpdateFlashcardResponse>;
 
   deleteFlashcard(request: FindOneRequest): Observable<UpdateFlashcardResponse>;
+
+  getShareLink(request: GetShareLinkRequest): Observable<GetShareLinkResponse>;
+
+  viewFromShareLink(request: ViewFromShareLinkRequest): Observable<ViewFromShareLinkResponse>;
 }
 
 export interface FlashcardServiceController {
@@ -103,11 +127,27 @@ export interface FlashcardServiceController {
   deleteFlashcard(
     request: FindOneRequest,
   ): Promise<UpdateFlashcardResponse> | Observable<UpdateFlashcardResponse> | UpdateFlashcardResponse;
+
+  getShareLink(
+    request: GetShareLinkRequest,
+  ): Promise<GetShareLinkResponse> | Observable<GetShareLinkResponse> | GetShareLinkResponse;
+
+  viewFromShareLink(
+    request: ViewFromShareLinkRequest,
+  ): Promise<ViewFromShareLinkResponse> | Observable<ViewFromShareLinkResponse> | ViewFromShareLinkResponse;
 }
 
 export function FlashcardServiceControllerMethods() {
   return function (constructor: Function) {
-    const grpcMethods: string[] = ["createFlashcard", "findOne", "findAll", "updateFlashcard", "deleteFlashcard"];
+    const grpcMethods: string[] = [
+      "createFlashcard",
+      "findOne",
+      "findAll",
+      "updateFlashcard",
+      "deleteFlashcard",
+      "getShareLink",
+      "viewFromShareLink",
+    ];
     for (const method of grpcMethods) {
       const descriptor: any = Reflect.getOwnPropertyDescriptor(constructor.prototype, method);
       GrpcMethod("FlashcardService", method)(constructor.prototype[method], method, descriptor);
