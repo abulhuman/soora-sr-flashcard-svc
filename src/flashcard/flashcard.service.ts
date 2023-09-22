@@ -10,6 +10,7 @@ import {
   GetShareLinkResponse,
   GroupBy,
   Order,
+  Status,
   UpdateFlashcardResponse,
 } from './flashcard.pb';
 import {
@@ -18,6 +19,7 @@ import {
   FindAllArgsRequestDto,
   FindOneRequestDto,
   GetShareLinkRequestDto,
+  ReviewFlashcardRequestDto,
   UpdateFlashcardRequestDto,
   ViewFromShareLinkRequestDto,
 } from './flashcard.dto';
@@ -61,11 +63,11 @@ export class FlashcardService {
       data: flashcard,
     };
   }
+
   async findAll(request: FindAllArgsRequestDto): Promise<FindAllResponse> {
     const orderBy = request?.orderBy ?? {
       createdDate: Order.DESC,
     };
-    // const groupBy: GroupBy = { attribute: request?.groupBy?.attribute ?? {} };
     orderBy.createdDate = orderBy?.createdDate === Order.ASC ? 1 : -1;
 
     let flashcards: FlashcardDocument[] = [];
@@ -73,7 +75,7 @@ export class FlashcardService {
     if (!request?.groupBy || !request.groupBy.attribute) {
 
       flashcards = await this.flashcardModel
-        .find()
+        .find({ nextReviewDate: request?.isVisible ? { $lte: new Date() } : undefined })
         .sort({
           createdDate: orderBy.createdDate,
         })
@@ -82,16 +84,17 @@ export class FlashcardService {
     } else {
       const { key, value } = request.groupBy.attribute;
       flashcards = await this.flashcardModel
-        .find({ $and: [{ attributes: { $elemMatch: { key, value } } }] })
+        .find({ $and: [{ attributes: { $elemMatch: { key, value } } }], nextReviewDate: request?.isVisible ? { $lte: new Date() } : {}, })
         .sort({
           createdDate: orderBy.createdDate,
         })
         .exec();
     }
 
-    flashcards.forEach((flashcard: FlashcardDocument) => {
-      flashcard.id = flashcard._id;
-    });
+    flashcards.map((flashcard: FlashcardDocument) => ({
+      ...flashcard,
+      id: flashcard._id,
+    }));
     return {
       status: HttpStatus.OK,
       error: null,
@@ -99,6 +102,7 @@ export class FlashcardService {
     };
 
   }
+
   async updateFlashcard(
     request: UpdateFlashcardRequestDto,
   ): Promise<UpdateFlashcardResponse> {
@@ -173,6 +177,35 @@ export class FlashcardService {
     return {
       error: null,
       status: HttpStatus.CREATED,
+    };
+  }
+
+  async reviewFlashcard(request: ReviewFlashcardRequestDto): Promise<UpdateFlashcardResponse> {
+    const SECOND = 1000;
+    const intervals = {
+      AGAIN: 30 * SECOND,
+      EASY: 60 * SECOND,
+      HARD: 120 * SECOND,
+    } as const;
+    const flashcard = await this.findOne({ id: request.id });
+    if (flashcard.status === HttpStatus.NOT_FOUND) {
+      return flashcard;
+    }
+    const { reviewStatus } = request;
+    const now = new Date();
+    // todo: upgrade protoc to version 3.15.0+ to use `string_enums` flag 
+    // todo: this allows you to set the increment to be  `interals[reviewStatus]` instead of the following
+    const increment = reviewStatus === Status.AGAIN ? intervals.AGAIN :
+      reviewStatus === Status.EASY ? intervals.EASY : intervals.HARD;
+
+    await this.flashcardModel.updateOne(
+      { _id: request.id },
+      { nextReviewDate: new Date(now.getTime() + increment).toISOString() },
+    );
+
+    return {
+      status: HttpStatus.OK,
+      error: null,
     };
   }
 }

@@ -43,6 +43,12 @@ export class Flashcard {
   })
   createdDate: string;
 
+  @Prop({
+    required: true,
+    default: new Date().toISOString(),
+  })
+  nextReviewDate: string;
+
   @Prop({ type: [AttributeSchema], default: [] })
   attributes: Attribute[];
 }

@@ -4,6 +4,13 @@ import { Observable } from "rxjs";
 
 export const protobufPackage = "flashcard";
 
+export enum Status {
+  AGAIN = 0,
+  EASY = 1,
+  HARD = 2,
+  UNRECOGNIZED = -1,
+}
+
 export enum Order {
   ASC = 0,
   DESC = 1,
@@ -32,6 +39,7 @@ export interface FindOneData {
   question: string;
   answer: string;
   createdDate: string;
+  nextReviewDate: string;
   attributes: AttributeData[];
 }
 
@@ -45,6 +53,7 @@ export interface OrderBy {
 
 export interface GroupBy {
   attribute?: AttributeData | undefined;
+  isVisible?: boolean | undefined;
 }
 
 export interface FindAllArgsRequest {
@@ -70,8 +79,9 @@ export interface FindAllResponse {
 
 export interface UpdateFlashcardRequest {
   id: string;
-  question: string;
-  answer: string;
+  question?: string | undefined;
+  answer?: string | undefined;
+  reviewStatus?: Status | undefined;
 }
 
 export interface UpdateFlashcardResponse {
@@ -133,6 +143,8 @@ export interface FlashcardServiceClient {
   viewFromShareLink(request: ViewFromShareLinkRequest): Observable<ViewFromShareLinkResponse>;
 
   createAttribute(request: CreateAttributeRequest): Observable<CreateAttributeResponse>;
+
+  reviewFlashcard(request: UpdateFlashcardRequest): Observable<UpdateFlashcardResponse>;
 }
 
 export interface FlashcardServiceController {
@@ -163,6 +175,10 @@ export interface FlashcardServiceController {
   createAttribute(
     request: CreateAttributeRequest,
   ): Promise<CreateAttributeResponse> | Observable<CreateAttributeResponse> | CreateAttributeResponse;
+
+  reviewFlashcard(
+    request: UpdateFlashcardRequest,
+  ): Promise<UpdateFlashcardResponse> | Observable<UpdateFlashcardResponse> | UpdateFlashcardResponse;
 }
 
 export function FlashcardServiceControllerMethods() {
@@ -176,6 +192,7 @@ export function FlashcardServiceControllerMethods() {
       "getShareLink",
       "viewFromShareLink",
       "createAttribute",
+      "reviewFlashcard",
     ];
     for (const method of grpcMethods) {
       const descriptor: any = Reflect.getOwnPropertyDescriptor(constructor.prototype, method);

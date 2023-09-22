@@ -20,6 +20,7 @@
     "test:e2e": "jest --config ./test/jest-e2e.json",
     "proto:install": "npm i git+https://github.com/abulhuman/soora-sr-proto.git",
     "proto:flashcard": "protoc --plugin=node_modules/.bin/protoc-gen-ts_proto -I=./node_modules/soora-sr-proto/proto --ts_proto_out=src/flashcard/ node_modules/soora-sr-proto/proto/flashcard.proto --ts_proto_opt=nestJs=true --ts_proto_opt=fileSuffix=.pb --experimental_allow_proto3_optional",
+    "proto:flashcard:string_enums": "protoc --plugin=node_modules/.bin/protoc-gen-ts_proto -I=./node_modules/soora-sr-proto/proto --ts_proto_out=src/flashcard/ node_modules/soora-sr-proto/proto/flashcard.proto --ts_proto_opt=nestJs=true --ts_proto_opt=fileSuffix=.pb  --string_enums=true apt-cache policy protobuf-compiler --experimental_allow_proto3_optional",
     "postinstall": "npm run proto:install && npm run proto:flashcard"
   },
   "dependencies": {

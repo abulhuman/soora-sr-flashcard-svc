@@ -1,4 +1,4 @@
-import { IsJWT, IsNotEmpty, IsOptional, IsString, ValidateBy } from 'class-validator';
+import { IsBoolean, IsEnum, IsJWT, IsNotEmpty, IsOptional, IsString, ValidateBy } from 'class-validator';
 import {
   CreateFlashcardRequest,
   FindAllArgsRequest,
@@ -10,6 +10,7 @@ import {
   ViewFromShareLinkRequest,
   CreateAttributeRequest,
   GroupBy,
+  Status,
 } from './flashcard.pb';
 import { isValidObjectId } from 'mongoose';
 
@@ -96,9 +97,14 @@ export class FindAllArgsRequestDto implements FindAllArgsRequest {
       message: '$property must be a valid GroupBy',
     })
   public readonly groupBy?: GroupByRequestDto | undefined;
+
+  @IsOptional()
+  @IsBoolean()
+  public readonly isVisible?: boolean | undefined;
 }
 
 export class UpdateFlashcardRequestDto implements UpdateFlashcardRequest {
+  @IsNotEmpty()
   @ValidateBy(
     {
       name: 'IsValidObjectId',
@@ -110,11 +116,24 @@ export class UpdateFlashcardRequestDto implements UpdateFlashcardRequest {
   )
   public readonly id: string;
 
+  @IsOptional()
   @IsString()
-  public readonly question: string;
+  public readonly question?: string;
 
+  @IsOptional()
   @IsString()
-  public readonly answer: string;
+  public readonly answer?: string;
+}
+
+export class ReviewFlashcardRequestDto extends UpdateFlashcardRequestDto {
+  @IsNotEmpty()
+  @IsEnum(Status, {
+    // todo: remove slice(0, 3) when we start using the `string_enums` flag
+    message: `$property must be one of the following values: ${Object.values(
+      Status,
+    ).slice(0, 3).join(', ')}`
+  })
+  reviewStatus?: Status;
 }
 
 export class GetShareLinkRequestDto implements GetShareLinkRequest {
