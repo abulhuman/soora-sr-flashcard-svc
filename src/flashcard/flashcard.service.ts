@@ -3,14 +3,17 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Flashcard, FlashcardDocument } from './flashcard.schema';
 import mongoose, { Model } from 'mongoose';
 import {
+  CreateAttributeResponse,
   CreateFlashcardResponse,
   FindAllResponse,
   FindOneResponse,
   GetShareLinkResponse,
+  GroupBy,
   Order,
   UpdateFlashcardResponse,
 } from './flashcard.pb';
 import {
+  CreateAttributeRequestDto,
   CreateFlashcardRequestDto,
   FindAllArgsRequestDto,
   FindOneRequestDto,
@@ -23,7 +26,7 @@ import {
 export class FlashcardService {
   constructor(
     @InjectModel(Flashcard.name) private flashcardModel: Model<Flashcard>,
-  ) {}
+  ) { }
 
   async createFlashcard(
     request: CreateFlashcardRequestDto,
@@ -62,13 +65,29 @@ export class FlashcardService {
     const orderBy = request?.orderBy ?? {
       createdDate: Order.DESC,
     };
+    // const groupBy: GroupBy = { attribute: request?.groupBy?.attribute ?? {} };
     orderBy.createdDate = orderBy?.createdDate === Order.ASC ? 1 : -1;
-    const flashcards = await this.flashcardModel
-      .find()
-      .sort({
-        createdDate: orderBy.createdDate,
-      })
-      .exec();
+
+    let flashcards: FlashcardDocument[] = [];
+
+    if (!request?.groupBy || !request.groupBy.attribute) {
+
+      flashcards = await this.flashcardModel
+        .find()
+        .sort({
+          createdDate: orderBy.createdDate,
+        })
+        .exec();
+
+    } else {
+      const { key, value } = request.groupBy.attribute;
+      flashcards = await this.flashcardModel
+        .find({ $and: [{ attributes: { $elemMatch: { key, value } } }] })
+        .sort({
+          createdDate: orderBy.createdDate,
+        })
+        .exec();
+    }
 
     flashcards.forEach((flashcard: FlashcardDocument) => {
       flashcard.id = flashcard._id;
@@ -78,6 +97,7 @@ export class FlashcardService {
       error: null,
       data: { flashcards },
     };
+
   }
   async updateFlashcard(
     request: UpdateFlashcardRequestDto,
@@ -129,5 +149,30 @@ export class FlashcardService {
       };
     }
     return this.findAll({ orderBy: { createdDate: Order.DESC } });
+  }
+
+  async createAttribute(
+    request: CreateAttributeRequestDto,
+  ): Promise<CreateAttributeResponse> {
+    const flashcard = await this.findOne({ id: request.flashcardId });
+    if (flashcard.status === HttpStatus.NOT_FOUND) {
+      return {
+        status: HttpStatus.NOT_FOUND,
+        error: ['Flashcard not found'],
+
+      };
+    }
+
+    const { key, value } = request;
+
+    await this.flashcardModel.updateOne(
+      { _id: request.flashcardId },
+      { $push: { attributes: { key, value } } },
+    );
+
+    return {
+      error: null,
+      status: HttpStatus.CREATED,
+    };
   }
 }

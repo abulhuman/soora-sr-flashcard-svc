@@ -8,6 +8,7 @@ import {
   UpdateFlashcardResponse,
 } from './flashcard.pb';
 import {
+  CreateAttributeRequestDto,
   CreateFlashcardRequestDto,
   FindAllArgsRequestDto,
   FindOneRequestDto,
@@ -58,6 +59,11 @@ export class FlashcardController {
   @GrpcMethod(FLASHCARD_SERVICE_NAME, 'ViewFromShareLink')
   private viewFromShareLink({ token }: ViewFromShareLinkRequestDto): Promise<UpdateFlashcardResponse> {
     return this.flashcardService.viewFromShareLink({ token });
+  }
+
+  @GrpcMethod(FLASHCARD_SERVICE_NAME, 'CreateAttribute')
+  private createAttribute({ flashcardId, key, value }: CreateAttributeRequestDto): Promise<UpdateFlashcardResponse> {
+    return this.flashcardService.createAttribute({ flashcardId, key, value });
   }
 
 }

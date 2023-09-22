@@ -8,6 +8,8 @@ import {
   UpdateFlashcardRequest,
   GetShareLinkRequest,
   ViewFromShareLinkRequest,
+  CreateAttributeRequest,
+  GroupBy,
 } from './flashcard.pb';
 import { isValidObjectId } from 'mongoose';
 
@@ -49,6 +51,11 @@ export class FindOneRequestDto implements FindOneRequest {
   public readonly id: string;
 }
 
+export class GroupByRequestDto implements GroupBy {
+  @IsOptional()
+  public readonly attribute?: { key: string; value: string; } | undefined;
+}
+
 export class FindAllArgsRequestDto implements FindAllArgsRequest {
   @IsOptional()
   @ValidateBy({
@@ -68,6 +75,27 @@ export class FindAllArgsRequestDto implements FindAllArgsRequest {
     },
   })
   public readonly orderBy?: OrderBy | undefined;
+
+  @IsOptional()
+  @ValidateBy({
+    name: 'IsValidGroupBy',
+    validator: (value: GroupBy) => {
+      const isValidGroupBy = (value: GroupBy) => {
+        return (
+          Object.keys(value).length === 1 &&
+          Object.keys(value).includes('attribute') &&
+          Object.values(value).every(
+            (v) => typeof v === 'string' || v === undefined,
+          )
+        );
+      };
+      return isValidGroupBy(value);
+    }
+  },
+    {
+      message: '$property must be a valid GroupBy',
+    })
+  public readonly groupBy?: GroupByRequestDto | undefined;
 }
 
 export class UpdateFlashcardRequestDto implements UpdateFlashcardRequest {
@@ -92,15 +120,15 @@ export class UpdateFlashcardRequestDto implements UpdateFlashcardRequest {
 export class GetShareLinkRequestDto implements GetShareLinkRequest {
   @IsNotEmpty()
   @IsString()
-  // @ValidateBy(
-  //   {
-  //     name: 'IsValidObjectId',
-  //     validator: (value: string) => isValidObjectId(value),
-  //   },
-  //   {
-  //     message: '$property must be a valid ObjectId',
-  //   },
-  // )
+  @ValidateBy(
+    {
+      name: 'IsValidObjectId',
+      validator: (value: string) => isValidObjectId(value),
+    },
+    {
+      message: '$property must be a valid ObjectId',
+    },
+  )
   public readonly userId: string;
 }
 
@@ -117,4 +145,28 @@ export class ViewFromShareLinkRequestDto implements ViewFromShareLinkRequest {
     },
   )
   public readonly token: string;
+}
+
+export class CreateAttributeRequestDto implements CreateAttributeRequest {
+  @IsNotEmpty()
+  @IsString()
+  @ValidateBy(
+    {
+      name: 'IsValidObjectId',
+      validator: (value: string) => isValidObjectId(value),
+    },
+    {
+      message: '$property must be a valid ObjectId',
+    },
+  )
+  flashcardId: string;
+
+  @IsNotEmpty()
+  @IsString()
+  key: string;
+
+  @IsNotEmpty()
+  @IsString()
+  value: string;
+
 }

@@ -3,6 +3,17 @@ import mongoose, { HydratedDocument } from 'mongoose';
 
 export type FlashcardDocument = HydratedDocument<Flashcard>;
 
+@Schema({ _id: false })
+class Attribute {
+  @Prop({ required: true })
+  key: string;
+
+  @Prop({ required: true })
+  value: string;
+}
+
+const AttributeSchema = SchemaFactory.createForClass(Attribute);
+
 @Schema()
 export class Flashcard {
   @Prop({
@@ -31,6 +42,10 @@ export class Flashcard {
     default: new Date().toISOString(),
   })
   createdDate: string;
+
+  @Prop({ type: [AttributeSchema], default: [] })
+  attributes: Attribute[];
 }
+
 
 export const FlashcardSchema = SchemaFactory.createForClass(Flashcard);

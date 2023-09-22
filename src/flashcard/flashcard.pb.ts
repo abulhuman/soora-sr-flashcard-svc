@@ -32,6 +32,7 @@ export interface FindOneData {
   question: string;
   answer: string;
   createdDate: string;
+  attributes: AttributeData[];
 }
 
 export interface FindOneRequest {
@@ -42,8 +43,13 @@ export interface OrderBy {
   createdDate: Order;
 }
 
+export interface GroupBy {
+  attribute?: AttributeData | undefined;
+}
+
 export interface FindAllArgsRequest {
   orderBy?: OrderBy | undefined;
+  groupBy?: GroupBy | undefined;
 }
 
 export interface FindOneResponse {
@@ -93,6 +99,22 @@ export interface ViewFromShareLinkResponse {
   data: FindAllData | undefined;
 }
 
+export interface AttributeData {
+  key: string;
+  value: string;
+}
+
+export interface CreateAttributeRequest {
+  flashcardId: string;
+  key: string;
+  value: string;
+}
+
+export interface CreateAttributeResponse {
+  status: number;
+  error: string[];
+}
+
 export const FLASHCARD_PACKAGE_NAME = "flashcard";
 
 export interface FlashcardServiceClient {
@@ -109,6 +131,8 @@ export interface FlashcardServiceClient {
   getShareLink(request: GetShareLinkRequest): Observable<GetShareLinkResponse>;
 
   viewFromShareLink(request: ViewFromShareLinkRequest): Observable<ViewFromShareLinkResponse>;
+
+  createAttribute(request: CreateAttributeRequest): Observable<CreateAttributeResponse>;
 }
 
 export interface FlashcardServiceController {
@@ -135,6 +159,10 @@ export interface FlashcardServiceController {
   viewFromShareLink(
     request: ViewFromShareLinkRequest,
   ): Promise<ViewFromShareLinkResponse> | Observable<ViewFromShareLinkResponse> | ViewFromShareLinkResponse;
+
+  createAttribute(
+    request: CreateAttributeRequest,
+  ): Promise<CreateAttributeResponse> | Observable<CreateAttributeResponse> | CreateAttributeResponse;
 }
 
 export function FlashcardServiceControllerMethods() {
@@ -147,6 +175,7 @@ export function FlashcardServiceControllerMethods() {
       "deleteFlashcard",
       "getShareLink",
       "viewFromShareLink",
+      "createAttribute",
     ];
     for (const method of grpcMethods) {
       const descriptor: any = Reflect.getOwnPropertyDescriptor(constructor.prototype, method);
